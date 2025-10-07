@@ -1,8 +1,13 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ImageUploader } from "@/components/ImageUploader";
 import { Button } from "@/components/ui/button";
-import { Sparkles, Zap, Upload } from "lucide-react";
+import { Sparkles, Zap, Upload, Loader2, ExternalLink, FileDown } from "lucide-react";
 import { toast } from "sonner";
+import {
+  NimGenerationResponse,
+  pollGenerationJob,
+  submitGenerationJob,
+} from "@/lib/nim";
 
 interface ImageFile {
   id: string;
@@ -14,6 +19,15 @@ interface ImageFile {
 const Index = () => {
   const [images, setImages] = useState<ImageFile[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [statusMessage, setStatusMessage] = useState<string>("");
+  const [result, setResult] = useState<NimGenerationResponse | null>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
+
+  useEffect(() => {
+    return () => {
+      abortControllerRef.current?.abort();
+    };
+  }, []);
 
   const handleProcess = async () => {
     if (images.length === 0) {
@@ -22,18 +36,56 @@ const Index = () => {
     }
 
     setIsProcessing(true);
+    setResult(null);
+    setStatusMessage("Submitting job to NVIDIA NIM...");
+
+    abortControllerRef.current?.abort();
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
     try {
-      // TODO: Connect to NIM backend via Edge Function
       const base64Images = images.map((img) => img.base64);
-      
-      // Simulating API call
-      await new Promise((resolve) => setTimeout(resolve, 2000));
-      
-      toast.success("Images processed successfully!");
-      console.log("Base64 images:", base64Images);
+      const submission = await submitGenerationJob(
+        {
+          images: base64Images,
+          meshFormat: "glb",
+          textureFormat: "png",
+        },
+        { signal: controller.signal }
+      );
+
+      setStatusMessage(
+        submission.message ?? "Job submitted. Waiting for completion..."
+      );
+
+      const finalResult = await pollGenerationJob(submission.jobId, {
+        signal: controller.signal,
+        onUpdate: (update) => {
+          if (update.message) {
+            setStatusMessage(update.message);
+          } else {
+            setStatusMessage(`Status: ${update.status}`);
+          }
+        },
+      });
+
+      setResult(finalResult);
+
+      if (finalResult.status === "succeeded") {
+        toast.success("Images processed successfully!");
+      } else {
+        toast.error(finalResult.error ?? "NIM job failed");
+      }
     } catch (error) {
+      if (error instanceof DOMException && error.name === "AbortError") {
+        return;
+      }
+
+      const errorMessage =
+        error instanceof Error ? error.message : "Error processing images";
       toast.error("Error processing images");
       console.error(error);
+      setStatusMessage(errorMessage);
     } finally {
       setIsProcessing(false);
     }
@@ -84,7 +136,10 @@ const Index = () => {
               className="bg-gradient-to-r from-primary to-primary-glow hover:opacity-90 text-lg px-8 py-6 glow-primary"
             >
               {isProcessing ? (
-                <>Processing {images.length} Image(s)...</>
+                <>
+                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
+                  Processing {images.length} Image(s)...
+                </>
               ) : (
                 <>
                   <Sparkles className="w-5 h-5 mr-2" />
@@ -95,6 +150,104 @@ const Index = () => {
             <p className="text-sm text-muted-foreground mt-4">
               {images.length} image(s) ready for processing
             </p>
+            {statusMessage && (
+              <p className="text-sm text-muted-foreground mt-2">
+                {statusMessage}
+              </p>
+            )}
+          </section>
+        )}
+
+        {result && (
+          <section className="max-w-6xl mx-auto mt-16">
+            <div className="glass rounded-xl p-6 md:p-8 space-y-6">
+              <header className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl font-semibold">Generation Result</h2>
+                  <p className="text-sm text-muted-foreground">
+                    Job ID: <span className="font-mono">{result.jobId}</span>
+                  </p>
+                </div>
+                <span
+                  className={`inline-flex items-center rounded-full px-4 py-1 text-sm font-medium capitalize ${
+                    result.status === "succeeded"
+                      ? "bg-emerald-500/10 text-emerald-500"
+                      : result.status === "failed"
+                        ? "bg-destructive/10 text-destructive"
+                        : "bg-muted text-muted-foreground"
+                  }`}
+                >
+                  Status: {result.status}
+                </span>
+              </header>
+
+              {result.message && (
+                <p className="text-sm text-muted-foreground">{result.message}</p>
+              )}
+
+              {result.status === "failed" && result.error && (
+                <p className="text-sm text-destructive">{result.error}</p>
+              )}
+
+              {result.assets && result.assets.length > 0 ? (
+                <div className="grid gap-4 md:grid-cols-2">
+                  {result.assets.map((asset) => (
+                    <article
+                      key={asset.id}
+                      className="glass rounded-lg p-4 flex flex-col gap-3"
+                    >
+                      <div className="flex items-center justify-between">
+                        <div>
+                          <h3 className="font-semibold text-lg">
+                            {asset.type.toUpperCase()}
+                          </h3>
+                          {asset.sizeMB && (
+                            <p className="text-xs text-muted-foreground">
+                              {asset.sizeMB.toFixed(2)} MB
+                            </p>
+                          )}
+                        </div>
+                        <div className="flex gap-2">
+                          <Button asChild size="sm" variant="outline">
+                            <a
+                              href={asset.url}
+                              target="_blank"
+                              rel="noreferrer"
+                              className="inline-flex items-center gap-2"
+                            >
+                              <ExternalLink className="w-4 h-4" />
+                              Open
+                            </a>
+                          </Button>
+                          <Button asChild size="sm">
+                            <a
+                              href={asset.url}
+                              download
+                              className="inline-flex items-center gap-2"
+                            >
+                              <FileDown className="w-4 h-4" />
+                              Download
+                            </a>
+                          </Button>
+                        </div>
+                      </div>
+                      {asset.previewImageUrl && (
+                        <img
+                          src={asset.previewImageUrl}
+                          alt={`${asset.type} preview`}
+                          className="rounded-lg border border-border object-cover"
+                        />
+                      )}
+                    </article>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  No downloadable assets were returned. Check the Edge function
+                  response to ensure asset URLs are forwarded correctly.
+                </p>
+              )}
+            </div>
           </section>
         )}
 
