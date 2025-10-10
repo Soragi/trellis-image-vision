@@ -9,6 +9,7 @@ import {
   submitGenerationJob,
 } from "@/lib/nim";
 import { AdvancedParameters, AdvancedParams } from "@/components/AdvancedParameters";
+import { GlbViewer } from "@/components/GlbViewer";
 
 interface ImageFile {
   id: string;
@@ -259,13 +260,15 @@ const Index = () => {
                           </Button>
                         </div>
                       </div>
-                      {asset.previewImageUrl && (
+                      {asset.type === "glb" ? (
+                        <GlbViewer url={asset.url} />
+                      ) : asset.previewImageUrl ? (
                         <img
                           src={asset.previewImageUrl}
                           alt={`${asset.type} preview`}
                           className="rounded-lg border border-border object-cover"
                         />
-                      )}
+                      ) : null}
                     </article>
                   ))}
                 </div>
