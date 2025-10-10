@@ -50,6 +50,33 @@ A complete end-to-end application that transforms 2D images into stunning 3D mod
 
 ## 🚀 Quick Start Deployment
 
+### Deployment Options
+
+You can deploy this application using any of the following methods:
+
+#### Option 1: 📓 Jupyter Notebook (Recommended for VMs)
+Interactive deployment with real-time monitoring and management from a Jupyter notebook.
+```bash
+cd notebooks
+jupyter notebook
+# Open deployment.ipynb and run cells sequentially
+```
+📚 **See**: [`notebooks/QUICKSTART.md`](notebooks/QUICKSTART.md) for detailed instructions
+
+#### Option 2: 🐍 Python Script (Recommended for Automation)
+One-command deployment using a standalone Python script.
+```bash
+cd notebooks
+export NVIDIA_API_KEY="your-api-key-here"
+./deploy_standalone.py deploy
+```
+📚 **See**: [`notebooks/deploy_standalone.py --help`](notebooks/deploy_standalone.py)
+
+#### Option 3: 🔧 Shell Scripts (Traditional)
+Step-by-step deployment using bash scripts (instructions below).
+
+---
+
 ### Step 1: Clone and Setup
 
 ```bash
