@@ -135,21 +135,24 @@ const Index = () => {
           </div>
         </header>
 
-        {/* Upload Section */}
-        <section className="max-w-6xl mx-auto mb-12">
-          <h2 className="text-2xl font-semibold mb-6">Upload Images</h2>
-          <ImageUploader onImagesChange={setImages} />
-        </section>
+        {/* Main Content - Two Column Layout */}
+        <section className="max-w-7xl mx-auto mb-12">
+          <div className="grid lg:grid-cols-[1fr,400px] gap-6">
+            {/* Left Column - Image Upload */}
+            <div className="space-y-6">
+              <h2 className="text-2xl font-semibold">Upload Images</h2>
+              <ImageUploader onImagesChange={setImages} />
+            </div>
 
-        {/* Advanced Parameters */}
-        {images.length > 0 && (
-          <section className="max-w-6xl mx-auto mb-12">
-            <AdvancedParameters 
-              params={advancedParams} 
-              onChange={setAdvancedParams}
-            />
-          </section>
-        )}
+            {/* Right Column - Parameters */}
+            <div className="space-y-6">
+              <AdvancedParameters 
+                params={advancedParams} 
+                onChange={setAdvancedParams}
+              />
+            </div>
+          </div>
+        </section>
 
         {/* Action Section */}
         {images.length > 0 && (
