@@ -3,6 +3,12 @@ export interface NimGenerationRequest {
   prompt?: string;
   meshFormat?: string;
   textureFormat?: string;
+  seed?: number;
+  noTexture?: boolean;
+  slatCfgScale?: number;
+  ssCfgScale?: number;
+  slatSamplingSteps?: number;
+  ssSamplingSteps?: number;
 }
 
 export interface NimAsset {

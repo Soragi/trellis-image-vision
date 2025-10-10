@@ -8,6 +8,7 @@ import {
   pollGenerationJob,
   submitGenerationJob,
 } from "@/lib/nim";
+import { AdvancedParameters, AdvancedParams } from "@/components/AdvancedParameters";
 
 interface ImageFile {
   id: string;
@@ -22,6 +23,14 @@ const Index = () => {
   const [statusMessage, setStatusMessage] = useState<string>("");
   const [result, setResult] = useState<NimGenerationResponse | null>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+  const [advancedParams, setAdvancedParams] = useState<AdvancedParams>({
+    seed: 0,
+    noTexture: false,
+    slatCfgScale: 3,
+    ssCfgScale: 7.5,
+    slatSamplingSteps: 25,
+    ssSamplingSteps: 25,
+  });
 
   useEffect(() => {
     return () => {
@@ -50,6 +59,12 @@ const Index = () => {
           images: base64Images,
           meshFormat: "glb",
           textureFormat: "png",
+          seed: advancedParams.seed,
+          noTexture: advancedParams.noTexture,
+          slatCfgScale: advancedParams.slatCfgScale,
+          ssCfgScale: advancedParams.ssCfgScale,
+          slatSamplingSteps: advancedParams.slatSamplingSteps,
+          ssSamplingSteps: advancedParams.ssSamplingSteps,
         },
         { signal: controller.signal }
       );
@@ -125,6 +140,16 @@ const Index = () => {
           <h2 className="text-2xl font-semibold mb-6">Upload Images</h2>
           <ImageUploader onImagesChange={setImages} />
         </section>
+
+        {/* Advanced Parameters */}
+        {images.length > 0 && (
+          <section className="max-w-6xl mx-auto mb-12">
+            <AdvancedParameters 
+              params={advancedParams} 
+              onChange={setAdvancedParams}
+            />
+          </section>
+        )}
 
         {/* Action Section */}
         {images.length > 0 && (
