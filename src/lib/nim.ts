@@ -33,23 +33,20 @@ export interface NimGenerationResponse {
   error?: string;
 }
 
-const DEFAULT_EDGE_PATH = "/api/nim";
+const DEFAULT_BACKEND_URL = "http://localhost:3001/api";
 
 const buildHeaders = () => {
   const headers: HeadersInit = {
     "Content-Type": "application/json",
   };
 
-  const apiKey = import.meta.env.VITE_NIM_API_KEY;
-  if (apiKey) {
-    headers["Authorization"] = `Bearer ${apiKey}`;
-  }
-
+  // Note: API key is now handled by the backend service
+  // The backend will authenticate with Trellis NIM using the configured API key
   return headers;
 };
 
 const getBaseUrl = () => {
-  const base = import.meta.env.VITE_NIM_EDGE_URL ?? DEFAULT_EDGE_PATH;
+  const base = import.meta.env.VITE_BACKEND_URL ?? DEFAULT_BACKEND_URL;
   return base.replace(/\/$/, "");
 };
 
@@ -61,7 +58,7 @@ export const submitGenerationJob = async (
   payload: NimGenerationRequest,
   options: SubmitJobOptions = {}
 ): Promise<NimGenerationResponse> => {
-  const response = await fetch(`${getBaseUrl()}/jobs`, {
+  const response = await fetch(`${getBaseUrl()}/jobs/base64`, {
     method: "POST",
     headers: buildHeaders(),
     body: JSON.stringify(payload),
@@ -71,7 +68,7 @@ export const submitGenerationJob = async (
   if (!response.ok) {
     const errorText = await response.text();
     throw new Error(
-      `NIM request failed (${response.status} ${response.statusText}): ${errorText}`
+      `Backend request failed (${response.status} ${response.statusText}): ${errorText}`
     );
   }
 
@@ -109,7 +106,7 @@ export const pollGenerationJob = async (
     if (!response.ok) {
       const errorText = await response.text();
       throw new Error(
-        `Failed to poll NIM job (${response.status} ${response.statusText}): ${errorText}`
+        `Failed to poll job status (${response.status} ${response.statusText}): ${errorText}`
       );
     }
 
@@ -123,5 +120,5 @@ export const pollGenerationJob = async (
     await new Promise((resolve) => setTimeout(resolve, intervalMs));
   }
 
-  throw new Error("Timed out while waiting for NIM job to complete");
+  throw new Error("Timed out while waiting for job to complete");
 };

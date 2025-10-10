@@ -46,7 +46,7 @@ const Index = () => {
 
     setIsProcessing(true);
     setResult(null);
-    setStatusMessage("Submitting job to NVIDIA NIM...");
+    setStatusMessage("Submitting job to Trellis NIM backend...");
 
     abortControllerRef.current?.abort();
     const controller = new AbortController();
@@ -89,7 +89,7 @@ const Index = () => {
       if (finalResult.status === "succeeded") {
         toast.success("Images processed successfully!");
       } else {
-        toast.error(finalResult.error ?? "NIM job failed");
+        toast.error(finalResult.error ?? "3D generation job failed");
       }
     } catch (error) {
       if (error instanceof DOMException && error.name === "AbortError") {
@@ -271,7 +271,7 @@ const Index = () => {
                 </div>
               ) : (
                 <p className="text-sm text-muted-foreground">
-                  No downloadable assets were returned. Check the Edge function
+                  No downloadable assets were returned. Check the backend
                   response to ensure asset URLs are forwarded correctly.
                 </p>
               )}
