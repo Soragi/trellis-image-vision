@@ -65,7 +65,7 @@ nvidia-smi
 
    ```bash
    export NGC_API_KEY=<your-ngc-api-key>
-   sudo docker run --rm --gpus all      -e NGC_API_KEY=$NGC_API_KEY      -p 8000:8000      --name trellis-nim      nvcr.io/nvidia/nim/microsoft/trellis:latest
+   sudo docker run --rm --gpus all      -e NGC_API_KEY=$NGC_API_KEY      -p 8000:8000      --name trellis-nim      nvcr.io/nim/microsoft/trellis:latest
    ```
 
    Leave this container running; it will serve the `/v1/images-to-3d` endpoint used in both the notebook and web UI.
