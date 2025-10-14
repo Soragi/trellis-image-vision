@@ -1,22 +1,16 @@
-# 🎨 Trellis NIM Deployment - Simplified Jupyter Notebook
+# 🎨 Trellis NIM - Simple Deployment
 
-A streamlined solution for deploying NVIDIA's Trellis NIM (Neural Image Models) for 3D model generation from 2D images. This project provides a single Jupyter notebook that handles everything from GPU setup to 3D model generation.
+A streamlined Jupyter notebook for deploying NVIDIA Trellis NIM and generating 3D models from text prompts on L40s GPU.
 
 ## 🌟 What This Does
 
-Transform 2D images into stunning 3D GLB models using NVIDIA's Trellis NIM technology through a simple Jupyter notebook workflow:
-
-- **🔍 GPU Detection**: Automatically checks for L40s GPU availability with nvidia-smi
-- **🚀 NIM Deployment**: Follows NVIDIA's official blueprint for Trellis NIM deployment
-- **🖼️ Image Processing**: Upload images and generate 3D models
-- **📥 GLB Output**: Download generated 3D models in GLB format
+Deploy NVIDIA's Trellis NIM with just a few simple steps and generate 3D GLB models from text prompts.
 
 ## 📋 Prerequisites
 
 ### Hardware Requirements
 - **GPU**: NVIDIA L40s (or compatible with >= 24GB VRAM)
 - **RAM**: Minimum 32GB system RAM
-- **Storage**: At least 50GB free space
 
 ### Software Requirements
 - **Operating System**: Linux (Ubuntu 20.04+ recommended)
@@ -26,177 +20,131 @@ Transform 2D images into stunning 3D GLB models using NVIDIA's Trellis NIM techn
 
 ### NVIDIA Account Requirements
 - Active [NVIDIA Developer](https://developer.nvidia.com/) account
-- Access to [NGC (NVIDIA GPU Cloud)](https://ngc.nvidia.com/)
-- NGC API key (get from https://ngc.nvidia.com/setup/api-key)
+- NGC API key from https://ngc.nvidia.com/setup/api-key
 
 ## 🚀 Quick Start
 
-### 1. Clone and Setup
+### 1. Install Dependencies
 ```bash
-git clone <your-repository-url>
-cd trellis-image-vision
-```
+# Install Jupyter if you don't have it
+pip install jupyter
 
-### 2. Install Jupyter
-```bash
-# Install Python dependencies
-pip install jupyter requests python-dotenv pillow tqdm ipywidgets
-
-# Start Jupyter Notebook
-jupyter notebook
-```
-
-### 3. Run the Complete Deployment
-Open `trellis_nim_complete_deployment.ipynb` and run all cells sequentially. The notebook will:
-
-1. **Step 1**: Check GPU availability with nvidia-smi
-2. **Step 2**: Install Docker and NVIDIA Container Toolkit
-3. **Step 3**: Authenticate with NGC and deploy Trellis NIM
-4. **Step 4**: Test API connectivity
-5. **Step 5**: Run image-to-3D generation workflow
-
-### 4. Generate 3D Models
-The notebook includes a complete workflow to:
-- Upload your images (PNG, JPG, JPEG, WEBP)
-- Configure generation parameters
-- Submit jobs to the deployed NIM
-- Download GLB models and textures
-
-## 📖 Detailed Workflow
-
-### GPU Check
-The notebook automatically detects your L40s GPU and verifies NVIDIA drivers:
-```bash
-nvidia-smi  # Checks GPU status and availability
-```
-
-### NIM Deployment
-Follows NVIDIA's official blueprint from https://build.nvidia.com/microsoft/trellis/deploy:
-- Pulls the official Trellis NIM container
-- Configures GPU access
-- Starts the NIM service on port 8000
-- Verifies API connectivity
-
-### Image-to-3D Generation
-Complete workflow for generating 3D models:
-- Base64 encode input images
-- Submit generation jobs
-- Poll for completion
-- Download GLB models and PNG textures
-
-## 🔧 Configuration Options
-
-### Generation Parameters
-- **Mesh Format**: GLB (default), OBJ, PLY
-- **Texture Format**: PNG (default), JPG
-- **Seed**: Random seed for reproducible results
-- **CFG Scales**: Control generation quality and adherence
-- **Sampling Steps**: Quality vs speed tradeoff
-
-### Advanced Settings
-- **No Texture**: Generate geometry-only models
-- **Custom prompts**: Guide generation with text descriptions
-- **Batch processing**: Handle multiple images simultaneously
-
-## 🛠️ Troubleshooting
-
-### Common Issues
-
-#### "No GPU detected"
-```bash
-# Check NVIDIA drivers
-nvidia-smi
-
-# Install drivers if missing
+# Install Docker with NVIDIA runtime (Ubuntu example)
 sudo apt update
-sudo apt install nvidia-driver-470  # or latest version
-```
+sudo apt install docker.io
 
-#### "Docker GPU access failed"
-```bash
 # Install NVIDIA Container Toolkit
 distribution=$(. /etc/os-release;echo $ID$VERSION_ID)
-curl -s -L https://nvidia.github.io/nvidia-docker/gpgkey | sudo apt-key add -
-curl -s -L https://nvidia.github.io/nvidia-docker/$distribution/nvidia-docker.list | sudo tee /etc/apt/sources.list.d/nvidia-docker.list
-
-sudo apt-get update && sudo apt-get install -y nvidia-docker2
+curl -fsSL https://nvidia.github.io/libnvidia-container/gpgkey | sudo gpg --dearmor -o /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
+curl -fsSL https://nvidia.github.io/libnvidia-container/$distribution/libnvidia-container.list | sed 's#deb https://#deb [signed-by=/usr/share/keyrings/nvidia-container-toolkit-keyring.gpg] https://#g' | sudo tee /etc/apt/sources.list.d/nvidia-container-toolkit.list
+sudo apt update && sudo apt install -y nvidia-container-toolkit
 sudo systemctl restart docker
 ```
 
-#### "NGC Authentication failed"
-- Verify your NGC API key at https://ngc.nvidia.com/setup/api-key
-- Ensure the key starts with 'nvapi-'
-- Check your NGC account has access to Trellis NIM
-
-#### "Out of memory"
-- Ensure no other processes are using GPU memory
-- Reduce batch size or image resolution
-- Check available GPU memory with `nvidia-smi`
-
-## 📊 Monitoring
-
-### Check NIM Status
+### 2. Run the Notebook
 ```bash
-# Check if container is running
-docker ps | grep trellis-nim
+# Start Jupyter Notebook
+jupyter notebook
 
-# View container logs
-docker logs trellis-nim
-
-# Monitor GPU usage
-watch -n 1 nvidia-smi
+# Open: trellis_nim_simple.ipynb
 ```
 
-### Health Checks
-The notebook includes built-in health checks:
-- Container status verification
-- API endpoint testing
-- GPU memory monitoring
-- Generation workflow validation
+### 3. Follow the Notebook Steps
+
+1. **Step 1**: Check GPU availability with `nvidia-smi`
+2. **Step 2**: Deploy Trellis NIM container 
+   - Set your NGC API key
+   - Login to NGC registry
+   - Start the container
+3. **Step 3**: Generate 3D models
+   - Change the prompt
+   - Run the generation cell
+   - Download GLB files
+
+## 🎯 Usage
+
+### Generate Your First 3D Model
+
+1. Open `trellis_nim_simple.ipynb`
+2. Run all cells in **Step 1** and **Step 2** to deploy NIM
+3. In **Step 3**, change this line:
+   ```python
+   PROMPT = "A simple coffee shop interior"  # Change this!
+   ```
+4. Run the generation cells to create your GLB file
+
+### Example Prompts
+- `"A modern chair"`
+- `"A futuristic car"`
+- `"A wooden table"`
+- `"A cozy bedroom"`
+- `"A space station interior"`
 
 ## 📁 Project Structure
 
 ```
 trellis-image-vision/
-├── 📓 trellis_nim_complete_deployment.ipynb  # Main deployment notebook
-├── 📄 README.md                              # This documentation
-├── 📄 .gitignore                             # Git ignore rules
-└── 📁 .git/                                  # Git repository data
+├── 📓 trellis_nim_simple.ipynb    # Main notebook - everything you need
+├── 📄 README.md                   # This documentation
+├── 📄 .gitignore                  # Git ignore rules
+└── 📁 .git/                       # Git repository
 ```
 
-## 🔄 Updates
+## 🛠️ Troubleshooting
 
-### Updating Trellis NIM
+### "No GPU detected"
 ```bash
-# Pull latest NIM image
-docker pull nvcr.io/nim/microsoft/trellis:latest
-
-# Restart with new image (run in notebook)
-docker stop trellis-nim
-docker rm trellis-nim
-# Then re-run deployment cells in notebook
+nvidia-smi  # Should show your L40s
 ```
 
-## 🤝 Support
+### "Docker command not found"
+```bash
+sudo apt install docker.io
+```
 
-For support and questions:
-- 📧 Create an issue in this repository
-- 📖 Check the troubleshooting section above
-- 🔍 Review the notebook output for detailed error messages
-- 📚 Consult NVIDIA's official Trellis documentation
+### "Permission denied" with Docker
+```bash
+sudo usermod -aG docker $USER
+# Then logout and login again
+```
 
-## 📄 License
+### "Container won't start"
+```bash
+# Check logs
+docker logs nim-server
 
-This project is licensed under the MIT License.
+# Check if container exists
+docker ps -a
+```
 
-## 🙏 Acknowledgments
+### "API key invalid"
+- Get a new key from https://ngc.nvidia.com/setup/api-key
+- Make sure it starts with `nvapi-`
+- Replace `<PASTE_API_KEY_HERE>` in the notebook
 
-- **NVIDIA** for the Trellis NIM technology and deployment blueprint
-- **Jupyter** community for the excellent notebook environment
-- **Docker** for containerization platform
+## 📊 Container Management
+
+```bash
+# Check if running
+docker ps | grep nim-server
+
+# View logs
+docker logs nim-server
+
+# Stop container
+docker stop nim-server && docker rm nim-server
+```
+
+## 🎉 That's It!
+
+Your workflow is now:
+
+1. **Deploy once**: Run notebook Steps 1-2
+2. **Generate many**: Change prompt in Step 3, run cells
+3. **Download GLB**: Use generated 3D models anywhere
+
+**Total files needed**: Just 1 Jupyter notebook!
 
 ---
 
-**🎉 Ready to Generate 3D Models!** 
-
-Simply open `trellis_nim_complete_deployment.ipynb` in Jupyter Notebook and run all cells to deploy Trellis NIM and start generating 3D models from your 2D images!
+🎯 **Ready to create 3D models?** Open `trellis_nim_simple.ipynb` and start generating!
